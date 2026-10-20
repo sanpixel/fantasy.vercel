@@ -233,7 +233,7 @@ every one of them for every season.
 |---|---|
 | Actual | What Yahoo recorded. |
 | Best ball | Its optimal lineup. |
-| Projected | What Yahoo projected for the lineup it set. |
+| Projected | What Yahoo projected for the lineup it set. Yahoo only projects teams with a matchup, so this lens decides its champion on the regular season alone. |
 | Floor | Its worst possible lineup. |
 
 ### 6.2 Formats
@@ -265,7 +265,8 @@ every one of them for every season.
 ### 6.4 The board
 
 The league home page leads with one line per universe: who won it, their record,
-and whether that differs from the real champion. Under it, a table of every team
+and whether that differs from the real champion. While a season is still being
+played, each universe shows who leads it instead. Under it, a table of every team
 against every universe, showing finishing place.
 
 Season stats per team:

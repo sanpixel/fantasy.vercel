@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+ <users count="1">
+  <user>
+   <guid>ABCDEF123</guid>
+   <games count="2">
+    <game>
+     <game_key>449</game_key><code>nfl</code><season>2024</season>
+     <leagues count="1">
+      <league><league_key>449.l.999</league_key><name>Made Up League</name><num_teams>4</num_teams><season>2024</season><renew/><renewed>461_1234</renewed><is_finished>1</is_finished></league>
+     </leagues>
+    </game>
+    <game>
+     <game_key>461</game_key><code>nfl</code><season>2025</season>
+     <leagues count="1">
+      <league><league_key>461.l.1234</league_key><name>Made Up League</name><num_teams>4</num_teams><season>2025</season><renew>449_999</renew><renewed/><is_finished>0</is_finished></league>
+     </leagues>
+    </game>
+   </games>
+  </user>
+ </users>
+</fantasy_content>

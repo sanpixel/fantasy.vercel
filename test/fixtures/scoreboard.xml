@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+ <league>
+  <league_key>461.l.1234</league_key>
+  <scoreboard>
+   <week>3</week>
+   <matchups count="1">
+    <matchup>
+     <week>3</week>
+     <status>postevent</status>
+     <is_playoffs>0</is_playoffs>
+     <is_consolation>0</is_consolation>
+     <is_tied>0</is_tied>
+     <winner_team_key>461.l.1234.t.2</winner_team_key>
+     <teams count="2">
+      <team><team_key>461.l.1234.t.1</team_key><team_points><coverage_type>week</coverage_type><week>3</week><total>101.20</total></team_points><team_projected_points><week>3</week><total>110.00</total></team_projected_points></team>
+      <team><team_key>461.l.1234.t.2</team_key><team_points><coverage_type>week</coverage_type><week>3</week><total>120.04</total></team_points><team_projected_points><week>3</week><total>99.50</total></team_projected_points></team>
+     </teams>
+    </matchup>
+   </matchups>
+  </scoreboard>
+ </league>
+</fantasy_content>

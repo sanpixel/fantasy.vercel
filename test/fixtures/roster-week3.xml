@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+ <team>
+  <team_key>461.l.1234.t.1</team_key>
+  <name>Made Up Team</name>
+  <roster>
+   <coverage_type>week</coverage_type>
+   <week>3</week>
+   <players count="2">
+    <player>
+     <player_key>461.p.1</player_key>
+     <name><full>Pat Passer</full></name>
+     <editorial_team_abbr>Dal</editorial_team_abbr>
+     <display_position>QB</display_position>
+     <eligible_positions><position>QB</position></eligible_positions>
+     <selected_position><coverage_type>week</coverage_type><week>3</week><position>QB</position><is_flex>0</is_flex></selected_position>
+     <player_points><coverage_type>week</coverage_type><week>3</week><total>21.5</total></player_points>
+    </player>
+    <player>
+     <player_key>461.p.2</player_key>
+     <name><full>Ron Runner</full></name>
+     <editorial_team_abbr>SF</editorial_team_abbr>
+     <display_position>RB</display_position>
+     <eligible_positions><position>RB</position><position>W/R/T</position></eligible_positions>
+     <selected_position><coverage_type>week</coverage_type><week>3</week><position>BN</position><is_flex>0</is_flex></selected_position>
+     <player_points><coverage_type>week</coverage_type><week>3</week><total>17.25</total></player_points>
+    </player>
+   </players>
+  </roster>
+ </team>
+</fantasy_content>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+ <league>
+  <league_key>461.l.1234</league_key>
+  <league_id>1234</league_id>
+  <name>Made Up League</name>
+  <num_teams>4</num_teams>
+  <scoring_type>head</scoring_type>
+  <renew>449_999</renew>
+  <renewed/>
+  <current_week>5</current_week>
+  <start_week>1</start_week>
+  <end_week>17</end_week>
+  <is_finished>0</is_finished>
+  <season>2025</season>
+  <settings>
+   <uses_playoff>1</uses_playoff>
+   <playoff_start_week>15</playoff_start_week>
+   <uses_playoff_reseeding>1</uses_playoff_reseeding>
+   <num_playoff_teams>4</num_playoff_teams>
+   <roster_positions>
+    <roster_position><position>QB</position><count>1</count></roster_position>
+    <roster_position><position>WR</position><count>2</count></roster_position>
+    <roster_position><position>W/R/T</position><count>1</count></roster_position>
+    <roster_position><position>BN</position><count>5</count></roster_position>
+    <roster_position><position>IR</position><count>1</count></roster_position>
+   </roster_positions>
+   <divisions>
+    <division><division_id>1</division_id><name>Tequila</name></division>
+   </divisions>
+  </settings>
+ </league>
+</fantasy_content>
