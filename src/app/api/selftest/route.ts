@@ -5,7 +5,7 @@ import { json } from "@/lib/http";
 import { selfTest } from "@/lib/selftest";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   const token = process.env.SELFTEST_TOKEN;

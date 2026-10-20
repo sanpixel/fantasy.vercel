@@ -95,21 +95,25 @@ export async function saveLeague(meta: LeagueMeta) {
 }
 
 export async function saveTeams(leagueKey: string, teams: TeamInfo[]) {
-  const s = sql();
-  await s.begin(async (tx) => {
-    for (const t of teams) {
-      await tx`
-        insert into fantasy.teams (team_key, league_key, name, logo_url, division_id, manager_guid, manager_name,
-          yahoo_rank, yahoo_seed, wins, losses, ties, points_for)
-        values (${t.key}, ${leagueKey}, ${t.name}, ${t.logoUrl}, ${t.divisionId}, ${t.managerGuid}, ${t.managerName},
-          ${t.yahooRank}, ${t.yahooSeed}, ${t.wins}, ${t.losses}, ${t.ties}, ${t.pointsFor})
-        on conflict (team_key) do update set
-          name = excluded.name, logo_url = excluded.logo_url, division_id = excluded.division_id,
-          manager_guid = excluded.manager_guid, manager_name = excluded.manager_name,
-          yahoo_rank = excluded.yahoo_rank, yahoo_seed = excluded.yahoo_seed, wins = excluded.wins,
-          losses = excluded.losses, ties = excluded.ties, points_for = excluded.points_for`;
-    }
-  });
+  // One statement for the whole league: the database may be far away.
+  const rows = teams.map((t) => ({
+    team_key: t.key, name: t.name, logo_url: t.logoUrl, division_id: t.divisionId,
+    manager_guid: t.managerGuid, manager_name: t.managerName, yahoo_rank: t.yahooRank,
+    yahoo_seed: t.yahooSeed, wins: t.wins, losses: t.losses, ties: t.ties, points_for: t.pointsFor,
+  }));
+  await sql()`
+    insert into fantasy.teams (team_key, league_key, name, logo_url, division_id, manager_guid, manager_name,
+      yahoo_rank, yahoo_seed, wins, losses, ties, points_for)
+    select x.team_key, ${leagueKey}, x.name, x.logo_url, x.division_id, x.manager_guid, x.manager_name,
+      x.yahoo_rank, x.yahoo_seed, x.wins, x.losses, x.ties, x.points_for
+    from jsonb_to_recordset(${sql().json(rows)}) as x(team_key text, name text, logo_url text, division_id text,
+      manager_guid text, manager_name text, yahoo_rank int, yahoo_seed int, wins int, losses int, ties int,
+      points_for numeric)
+    on conflict (team_key) do update set
+      name = excluded.name, logo_url = excluded.logo_url, division_id = excluded.division_id,
+      manager_guid = excluded.manager_guid, manager_name = excluded.manager_name,
+      yahoo_rank = excluded.yahoo_rank, yahoo_seed = excluded.yahoo_seed, wins = excluded.wins,
+      losses = excluded.losses, ties = excluded.ties, points_for = excluded.points_for`;
 }
 
 // ---------------------------------------------------------------- weeks
@@ -140,17 +144,21 @@ export async function syncState(leagueKey: string): Promise<SyncState> {
 }
 
 export async function saveScoreboard(leagueKey: string, week: number, matchups: Matchup[], final: boolean) {
-  const s = sql();
-  await s.begin(async (tx) => {
+  const rows = matchups.map((m, idx) => ({
+    idx, team_a: m.teams[0], team_b: m.teams[1], points_a: m.points[0], points_b: m.points[1],
+    proj_a: m.projected[0], proj_b: m.projected[1], is_playoffs: m.isPlayoffs,
+    is_consolation: m.isConsolation, winner: m.winner, status: m.status,
+  }));
+  await sql().begin(async (tx) => {
     await tx`delete from fantasy.matchups where league_key = ${leagueKey} and week = ${week}`;
-    let idx = 0;
-    for (const m of matchups) {
-      await tx`
-        insert into fantasy.matchups (league_key, week, idx, team_a, team_b, points_a, points_b, proj_a, proj_b,
-          is_playoffs, is_consolation, winner, status)
-        values (${leagueKey}, ${week}, ${idx++}, ${m.teams[0]}, ${m.teams[1]}, ${m.points[0]}, ${m.points[1]},
-          ${m.projected[0]}, ${m.projected[1]}, ${m.isPlayoffs}, ${m.isConsolation}, ${m.winner}, ${m.status})`;
-    }
+    await tx`
+      insert into fantasy.matchups (league_key, week, idx, team_a, team_b, points_a, points_b, proj_a, proj_b,
+        is_playoffs, is_consolation, winner, status)
+      select ${leagueKey}, ${week}, x.idx, x.team_a, x.team_b, x.points_a, x.points_b, x.proj_a, x.proj_b,
+        x.is_playoffs, x.is_consolation, x.winner, x.status
+      from jsonb_to_recordset(${tx.json(rows)}) as x(idx int, team_a text, team_b text, points_a numeric,
+        points_b numeric, proj_a numeric, proj_b numeric, is_playoffs boolean, is_consolation boolean,
+        winner text, status text)`;
     await tx`
       insert into fantasy.weeks (league_key, week, scoreboard_at, final) values (${leagueKey}, ${week}, now(), ${final})
       on conflict (league_key, week) do update set scoreboard_at = now(), final = excluded.final`;
@@ -158,16 +166,19 @@ export async function saveScoreboard(leagueKey: string, week: number, matchups: 
 }
 
 export async function saveRoster(leagueKey: string, week: number, teamKey: string, spots: Spot[], final: boolean) {
-  const s = sql();
-  await s.begin(async (tx) => {
+  const rows = spots.map((p) => ({
+    player_key: p.playerKey, name: p.name, nfl_team: p.nflTeam, position: p.position,
+    eligible: p.eligible, slot: p.slot, points: p.points,
+  }));
+  await sql().begin(async (tx) => {
     await tx`delete from fantasy.roster_spots where league_key = ${leagueKey} and week = ${week} and team_key = ${teamKey}`;
-    for (const p of spots) {
-      await tx`
-        insert into fantasy.roster_spots (league_key, week, team_key, player_key, name, nfl_team, position, eligible, slot, points)
-        values (${leagueKey}, ${week}, ${teamKey}, ${p.playerKey}, ${p.name}, ${p.nflTeam}, ${p.position},
-          ${p.eligible}, ${p.slot}, ${p.points})
-        on conflict do nothing`;
-    }
+    await tx`
+      insert into fantasy.roster_spots (league_key, week, team_key, player_key, name, nfl_team, position, eligible, slot, points)
+      select ${leagueKey}, ${week}, ${teamKey}, x.player_key, x.name, x.nfl_team, x.position,
+        coalesce(x.eligible, '{}'), x.slot, x.points
+      from jsonb_to_recordset(${tx.json(rows)}) as x(player_key text, name text, nfl_team text, position text,
+        eligible text[], slot text, points numeric)
+      on conflict do nothing`;
     await tx`
       insert into fantasy.roster_fetches (league_key, week, team_key, fetched_at, final, error)
       values (${leagueKey}, ${week}, ${teamKey}, now(), ${final}, null)
