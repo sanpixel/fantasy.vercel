@@ -42,7 +42,7 @@ export async function selfTest() {
       matchups: back.matchups.length,
       rosterWeeks: Object.keys(back.rosters).length,
       sameChampions: champs(a) === champs(b),
-      sameBench: JSON.stringify(a.stats.map((x) => x.bench)) === JSON.stringify(b.stats.map((x) => x.bench)),
+      sameBench: a.stats.every((x) => b.stats.find((y) => y.team === rekey(x.team))?.bench === x.bench),
       checks: b.checks,
       prefs: prefs.divisionNames["1"] === "Tequila",
       syncWeeks: st.weeks.size,
