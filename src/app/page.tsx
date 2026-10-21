@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   const viewer = await currentViewer();
-  const ready = signInReady();
+  const ready = await signInReady();
   const demo = sampleSeason(sampleKey(2025))!;
   const b = board(demo);
   const crowned = b.universes.filter((u) => u.champion);

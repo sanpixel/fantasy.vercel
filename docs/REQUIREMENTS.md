@@ -360,6 +360,7 @@ League members can rename divisions for display. Stored per league.
 | `/l/{league_key}/all-time` | Every season combined. |
 | `/tiers` | Tier game. |
 | `/status` | Setup checklist: which keys are set, database reachable, the exact Yahoo redirect URI to register. |
+| `/setup` | Paste the Yahoo app's ID and secret. Opens only from the setup link. |
 
 | API | Purpose |
 |---|---|
@@ -374,6 +375,7 @@ League members can rename divisions for display. Stored per league.
 | `GET /api/tier/next`, `POST /api/tier/guess`, `GET /api/tier/board` | Tier game. |
 | `GET /api/cron/refresh` | Daily refresh of live and correction weeks. Needs `CRON_SECRET`. |
 | `GET /api/status` | The `/status` checks as JSON. Never returns secret values. |
+| `POST /api/setup` | Setup code, client ID and secret. Checks with Yahoo, seals, saves. |
 
 ---
 
@@ -394,6 +396,7 @@ the Supabase REST API. Only the app's server connects, with `DATABASE_URL`.
 | `matchups` | Per league per week: both teams, points, projections, playoff and consolation flags, Yahoo's winner. |
 | `roster_spots` | Per league, week, team, player: name, NFL team, position, eligible positions, Yahoo slot, points. |
 | `league_prefs` | Division names, King of the Hill schedule, pool setting. |
+| `app_secrets` | The Yahoo app's ID and secret from the setup page, sealed under `TOKEN_KEY`. |
 | `tier_players` | Tier game players. |
 | `tier_board` | Initials, correct, total, current and best streak, last played. |
 
@@ -431,18 +434,29 @@ no second cache to go stale.
 
 ## 13. Plugging in the Yahoo key
 
-The app is deployed and running without it. To switch Yahoo on:
+The app is deployed and running without it. Switching Yahoo on needs no code
+change, no Vercel visit and no chat:
 
-1. Go to `https://developer.yahoo.com/apps/create/`, signed in to Yahoo.
-2. Create an app.
+1. Open the setup link: `{APP_URL}/setup#{setup code}`. The code lives only in
+   the part after `#`, which browsers never send to the server, and the site
+   keeps only its SHA-256 (`SETUP_CODE_HASH`).
+2. The page shows the exact redirect URI and the Yahoo steps:
+   - Go to `https://developer.yahoo.com/apps/create/`, signed in to Yahoo.
    - **Application type:** Web Application.
-   - **Redirect URI:** exactly the one shown on `/status`. It is
-     `{APP_URL}/api/yahoo/callback`.
+   - **Redirect URI:** `{APP_URL}/api/yahoo/callback`.
    - **API permissions:** Fantasy Sports, Read.
-3. Yahoo shows a **Client ID** and a **Client Secret**. Hand both over.
-4. They are set as `YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET` on the Vercel
-   project, and the app redeploys.
-5. `/status` turns green, and "Connect Yahoo" works.
+3. Paste the **Client ID** and **Client Secret** Yahoo shows, and save.
+4. The site checks the pair with Yahoo by trading a made-up sign-in code. A
+   pair Yahoo does not recognise is refused and nothing is saved.
+5. A good pair is sealed with AES-256-GCM under `TOKEN_KEY` and stored in
+   `fantasy.app_secrets`. It is never displayed again, only the last four
+   characters of the ID.
+6. Sign-in works at once. `/status` turns green.
+
+Anyone holding the link can replace the pair, which is how it is updated
+later. Five wrong codes from one address lock it for ten minutes. Setting
+`YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET` on Vercel still works and wins
+over the saved pair.
 
 ### Environment variables
 
@@ -452,8 +466,9 @@ The app is deployed and running without it. To switch Yahoo on:
 | `DATABASE_URL` | build | Supabase pooler connection, transaction mode. |
 | `TOKEN_KEY` | build | 32 random bytes, base64. Encrypts Yahoo tokens. |
 | `CRON_SECRET` | build | Authorises the daily refresh. |
-| `YAHOO_CLIENT_ID` | Sanj, later | Yahoo app. |
-| `YAHOO_CLIENT_SECRET` | Sanj, later | Yahoo app. |
+| `SETUP_CODE_HASH` | build | SHA-256 of the setup link's code. |
+| `YAHOO_CLIENT_ID` | optional | Yahoo app, if not added on the setup page. |
+| `YAHOO_CLIENT_SECRET` | optional | Yahoo app, if not added on the setup page. |
 | `ANTHROPIC_API_KEY` | Sanj, later | AI analyst only. Optional. |
 
 If the app later moves to another address, such as `fantasy.clocknumbers.com`,

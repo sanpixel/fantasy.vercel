@@ -8,9 +8,9 @@ import { authorizeUrl } from "@/lib/yahoo";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  if (!signInReady()) return NextResponse.redirect(`${appUrl()}/status`);
+  if (!(await signInReady())) return NextResponse.redirect(`${appUrl()}/status`);
   const state = randomId(16);
-  const res = NextResponse.redirect(authorizeUrl(state));
+  const res = NextResponse.redirect(await authorizeUrl(state));
   res.cookies.set("fx_oauth_state", state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

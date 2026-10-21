@@ -6,6 +6,7 @@
 import { open, seal } from "./crypto";
 import { sql } from "./db";
 import { redirectUri } from "./env";
+import { yahooApp } from "./yahoo-app";
 
 const AUTH_URL = "https://api.login.yahoo.com/oauth2/request_auth";
 const TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token";
@@ -20,9 +21,11 @@ export class YahooError extends Error {
   }
 }
 
-export function authorizeUrl(state: string): string {
+export async function authorizeUrl(state: string): Promise<string> {
+  const app = await yahooApp();
+  if (!app) throw new YahooError("The Yahoo app is not set up yet.", 503);
   const u = new URL(AUTH_URL);
-  u.searchParams.set("client_id", process.env.YAHOO_CLIENT_ID!);
+  u.searchParams.set("client_id", app.id);
   u.searchParams.set("redirect_uri", redirectUri());
   u.searchParams.set("response_type", "code");
   u.searchParams.set("language", "en-us");
@@ -39,7 +42,9 @@ interface TokenResponse {
 }
 
 async function tokenRequest(form: Record<string, string>): Promise<TokenResponse> {
-  const basic = Buffer.from(`${process.env.YAHOO_CLIENT_ID}:${process.env.YAHOO_CLIENT_SECRET}`).toString("base64");
+  const app = await yahooApp();
+  if (!app) throw new YahooError("The Yahoo app is not set up yet.", 503);
+  const basic = Buffer.from(`${app.id}:${app.secret}`).toString("base64");
   const res = await fetch(TOKEN_URL, {
     method: "POST",
     headers: {
@@ -58,6 +63,35 @@ async function tokenRequest(form: Record<string, string>): Promise<TokenResponse
 }
 
 export const exchangeCode = (code: string) => tokenRequest({ grant_type: "authorization_code", code });
+
+/**
+ * Ask Yahoo whether a client ID and secret are real, without a user: trade a
+ * made-up code. A wrong ID or secret fails on the app; a right one fails
+ * only because the code is made up.
+ */
+export async function checkYahooApp(id: string, secret: string): Promise<"ok" | "bad" | "unknown"> {
+  try {
+    const res = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${id}:${secret}`).toString("base64")}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+      body: new URLSearchParams({ grant_type: "authorization_code", code: "setup-check", redirect_uri: redirectUri() }),
+      cache: "no-store",
+    });
+    const body = await res.json().catch(() => ({}));
+    // Yahoo answers a made-up app with INVALID_CONSUMER_KEY, a wrong secret
+    // with a client or secret error, and a real app with a code error.
+    const err = String(body.error ?? "").toLowerCase();
+    if (/consumer|client|secret/.test(err) || res.status === 401) return "bad";
+    if (/grant|code/.test(err)) return "ok";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
 
 export async function storeTokens(guid: string, t: TokenResponse) {
   const expires = new Date(Date.now() + (t.expires_in ?? 3600) * 1000);

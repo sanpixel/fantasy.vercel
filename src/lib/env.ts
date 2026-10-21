@@ -1,5 +1,6 @@
 // What is configured, and the addresses that depend on it.
 import { tokenKeyOk } from "./crypto";
+import { yahooApp } from "./yahoo-app";
 
 export function appUrl(): string {
   if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
@@ -9,12 +10,12 @@ export function appUrl(): string {
 
 export const redirectUri = () => `${appUrl()}/api/yahoo/callback`;
 
-export const yahooReady = () => !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET);
+export const yahooReady = async () => !!(await yahooApp());
 export const dbReady = () => !!process.env.DATABASE_URL;
 export const chatReady = () => !!process.env.ANTHROPIC_API_KEY;
 
 /** Everything sign-in needs: Yahoo app, database, token key. */
-export const signInReady = () => yahooReady() && dbReady() && tokenKeyOk();
+export const signInReady = async () => dbReady() && tokenKeyOk() && (await yahooReady());
 
 export interface Check {
   name: string;
@@ -22,14 +23,15 @@ export interface Check {
   detail: string;
 }
 
-export function checks(): Check[] {
+export async function checks(): Promise<Check[]> {
+  const app = await yahooApp();
   return [
     {
       name: "Yahoo app",
-      ok: yahooReady(),
-      detail: yahooReady()
-        ? "YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET are set."
-        : "Waiting for YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET.",
+      ok: !!app,
+      detail: app
+        ? `Client ID ${app.hint}, ${app.source === "env" ? "from environment variables" : `added on the setup page${app.updatedAt ? ` ${app.updatedAt.toISOString().slice(0, 10)}` : ""}`}.`
+        : "Waiting for the client ID and secret. Add them with your setup link.",
     },
     { name: "Database", ok: dbReady(), detail: dbReady() ? "DATABASE_URL is set." : "DATABASE_URL is missing." },
     {

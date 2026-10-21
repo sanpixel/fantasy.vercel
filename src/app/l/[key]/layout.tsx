@@ -26,7 +26,7 @@ export default async function LeagueLayout({ children, params }: { children: Rea
       <main className="wrap section">
         <h2>Sign in to see this league</h2>
         <p className="muted">League pages are for the league&apos;s own members, checked against your Yahoo account.</p>
-        {signInReady() ? <a href="/api/yahoo/login" className="btn">Connect Yahoo</a> : <Link href="/status" className="btn off">Yahoo key coming</Link>}
+        {(await signInReady()) ? <a href="/api/yahoo/login" className="btn">Connect Yahoo</a> : <Link href="/status" className="btn off">Yahoo key coming</Link>}
       </main>
     );
   }

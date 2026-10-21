@@ -16,5 +16,5 @@ export async function GET() {
       database = "unreachable";
     }
   }
-  return json({ checks: checks(), database, redirectUri: redirectUri() });
+  return json({ checks: await checks(), database, redirectUri: redirectUri() });
 }

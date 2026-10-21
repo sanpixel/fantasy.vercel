@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Setup" };
 
 export default async function Status() {
-  const list = checks();
+  const list = await checks();
   let database = "DATABASE_URL is missing.";
   let reachable = false;
   const s = db();
@@ -56,7 +56,7 @@ export default async function Status() {
             Redirect URI, exactly: <code className="lime">{redirectUri()}</code>
           </li>
           <li>API permissions: Fantasy Sports, Read.</li>
-          <li>Hand over the Client ID and Client Secret Yahoo shows. They go in as YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET.</li>
+          <li>Paste the Client ID and Client Secret Yahoo shows into your setup link. The site checks them with Yahoo and stores them encrypted.</li>
         </ol>
       </section>
     </main>
