@@ -1,5 +1,7 @@
 # Fantasy
 
+Live at https://fantasy.clocknumbers.com.
+
 Your Yahoo fantasy football league, rebuilt with the lineup everyone should have
 set, then replayed every way the season could have gone, for every season.
 

@@ -19,7 +19,7 @@ of the old app. Everything after it is what the new app must do.
 | Which seasons | Every season Yahoo still has for the visitor: the current one and all past ones. |
 | What gets re-imagined | Every score, every week, the whole season, every past season. See section 6. |
 | Yahoo key | Not issued yet. The app ships without it and starts working the moment it is added. See section 13. |
-| Hosting | Vercel, from this repo's `main`. |
+| Hosting | Vercel, from this repo's `main`, at `fantasy.clocknumbers.com`. `fantasyvercel.vercel.app` redirects there. |
 | Database | The clocknumbers Supabase project, in its own `fantasy` schema, reached server-side only. |
 
 ---
@@ -462,7 +462,7 @@ over the saved pair.
 
 | Variable | Set by | Purpose |
 |---|---|---|
-| `APP_URL` | build | Public address. Decides the Yahoo redirect URI. |
+| `APP_URL` | build | Public address, `https://fantasy.clocknumbers.com`. Decides the Yahoo redirect URI. |
 | `DATABASE_URL` | build | Supabase pooler connection, transaction mode. |
 | `TOKEN_KEY` | build | 32 random bytes, base64. Encrypts Yahoo tokens. |
 | `CRON_SECRET` | build | Authorises the daily refresh. |
@@ -471,8 +471,9 @@ over the saved pair.
 | `YAHOO_CLIENT_SECRET` | optional | Yahoo app, if not added on the setup page. |
 | `ANTHROPIC_API_KEY` | Sanj, later | AI analyst only. Optional. |
 
-If the app later moves to another address, such as `fantasy.clocknumbers.com`,
-`APP_URL` and the Yahoo app's redirect URI change together.
+The redirect URI is `https://fantasy.clocknumbers.com/api/yahoo/callback`. If the
+app ever moves to another address, `APP_URL` and the Yahoo app's redirect URI
+change together.
 
 ---
 
