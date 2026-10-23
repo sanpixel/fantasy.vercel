@@ -26,6 +26,13 @@ export default async function Status() {
       <section className="hero" style={{ paddingTop: 40 }}>
         <Kicker tone={yahoo.ok ? undefined : "gold"}>{yahoo.ok ? "Ready" : "Waiting on the Yahoo key"}</Kicker>
         <h1 style={{ marginTop: 14, fontSize: "clamp(40px,8vw,88px)" }}>Setup</h1>
+        {/* The setup link shows only until a Yahoo app is saved. */}
+        {!yahoo.ok && process.env.SETUP_CODE ? (
+          <div className="row" style={{ marginTop: 22 }}>
+            <a href={`/setup#${process.env.SETUP_CODE}`} className="btn">Set up Yahoo</a>
+            <span className="muted small">Paste the Yahoo app&apos;s Client ID and Secret. The link disappears once it is set.</span>
+          </div>
+        ) : null}
       </section>
       <div className="scroll">
         <table>
